@@ -64,6 +64,27 @@ class Prompt(Base):
     )
 
 
+class Campaign(Base):
+    """Campaign model representing a game campaign that contains personas."""
+    
+    __tablename__ = "campaigns"
+    
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    name: Mapped[str] = mapped_column(String(100), nullable=False, unique=True)
+    description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, nullable=False, default=datetime.utcnow
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow
+    )
+    
+    # Relationships
+    personas: Mapped[List["Persona"]] = relationship(
+        "Persona", back_populates="campaign", cascade="all, delete-orphan"
+    )
+
+
 class Persona(Base):
     """Persona model representing a character/NPC in a game world."""
     
@@ -73,6 +94,7 @@ class Persona(Base):
     name: Mapped[str] = mapped_column(String(100), nullable=False)
     backstory: Mapped[str] = mapped_column(Text, nullable=False)
     personality: Mapped[str] = mapped_column(Text, nullable=False)
+    campaign_id: Mapped[int] = mapped_column(Integer, ForeignKey("campaigns.id"), nullable=False)
     created_at: Mapped[datetime] = mapped_column(
         DateTime, nullable=False, default=datetime.utcnow
     )
@@ -81,6 +103,7 @@ class Persona(Base):
     )
     
     # Relationships
+    campaign: Mapped["Campaign"] = relationship("Campaign", back_populates="personas")
     tags: Mapped[List["Tag"]] = relationship(
         secondary=persona_tags, back_populates="personas"
     )

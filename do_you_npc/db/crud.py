@@ -4,14 +4,14 @@ from typing import List, Optional
 from sqlalchemy.orm import Session
 from sqlalchemy import select
 
-from .models import Persona, Prompt, Tag
+from .models import Campaign, Persona, Prompt, Tag
 
 
 class PersonaCRUD:
     """CRUD operations for Persona model."""
     
     @staticmethod
-    def create(session: Session, name: str, backstory: str, personality: str, tags: List[Tag] = None) -> Persona:
+    def create(session: Session, name: str, backstory: str, personality: str, campaign_id: int, tags: List[Tag] = None) -> Persona:
         """Create a new persona.
         
         Args:
@@ -19,12 +19,13 @@ class PersonaCRUD:
             name: Persona name
             backstory: Persona backstory
             personality: Persona personality
+            campaign_id: Campaign ID this persona belongs to
             tags: List of tags to associate with the persona
             
         Returns:
             Persona: Created persona instance
         """
-        persona = Persona(name=name, backstory=backstory, personality=personality)
+        persona = Persona(name=name, backstory=backstory, personality=personality, campaign_id=campaign_id)
         if tags:
             persona.tags.extend(tags)
         
@@ -61,16 +62,33 @@ class PersonaCRUD:
         return session.execute(stmt).scalar_one_or_none()
     
     @staticmethod
-    def get_all(session: Session) -> List[Persona]:
-        """Get all personas.
+    def get_all(session: Session, campaign_id: int = None) -> List[Persona]:
+        """Get all personas, optionally filtered by campaign.
         
         Args:
             session: Database session
+            campaign_id: Optional campaign ID to filter by
             
         Returns:
-            List[Persona]: List of all personas
+            List[Persona]: List of personas
         """
         stmt = select(Persona)
+        if campaign_id is not None:
+            stmt = stmt.where(Persona.campaign_id == campaign_id)
+        return list(session.execute(stmt).scalars().all())
+    
+    @staticmethod
+    def get_by_campaign(session: Session, campaign_id: int) -> List[Persona]:
+        """Get all personas for a specific campaign.
+        
+        Args:
+            session: Database session
+            campaign_id: Campaign ID
+            
+        Returns:
+            List[Persona]: List of personas in the campaign
+        """
+        stmt = select(Persona).where(Persona.campaign_id == campaign_id)
         return list(session.execute(stmt).scalars().all())
     
     @staticmethod
@@ -323,5 +341,110 @@ class TagCRUD:
             return False
         
         session.delete(tag)
+        session.commit()
+        return True
+
+
+class CampaignCRUD:
+    """CRUD operations for Campaign model."""
+    
+    @staticmethod
+    def create(session: Session, name: str, description: str = None) -> Campaign:
+        """Create a new campaign.
+        
+        Args:
+            session: Database session
+            name: Campaign name
+            description: Campaign description (optional)
+            
+        Returns:
+            Campaign: Created campaign instance
+        """
+        campaign = Campaign(name=name, description=description)
+        session.add(campaign)
+        session.commit()
+        session.refresh(campaign)
+        return campaign
+    
+    @staticmethod
+    def get_by_id(session: Session, campaign_id: int) -> Optional[Campaign]:
+        """Get a campaign by ID.
+        
+        Args:
+            session: Database session
+            campaign_id: Campaign ID
+            
+        Returns:
+            Campaign: Campaign instance or None if not found
+        """
+        return session.get(Campaign, campaign_id)
+    
+    @staticmethod
+    def get_by_name(session: Session, name: str) -> Optional[Campaign]:
+        """Get a campaign by name.
+        
+        Args:
+            session: Database session
+            name: Campaign name
+            
+        Returns:
+            Campaign: Campaign instance or None if not found
+        """
+        stmt = select(Campaign).where(Campaign.name == name)
+        return session.execute(stmt).scalar_one_or_none()
+    
+    @staticmethod
+    def get_all(session: Session) -> List[Campaign]:
+        """Get all campaigns.
+        
+        Args:
+            session: Database session
+            
+        Returns:
+            List[Campaign]: List of all campaigns
+        """
+        stmt = select(Campaign)
+        return list(session.execute(stmt).scalars().all())
+    
+    @staticmethod
+    def update(session: Session, campaign_id: int, **kwargs) -> Optional[Campaign]:
+        """Update a campaign.
+        
+        Args:
+            session: Database session
+            campaign_id: Campaign ID
+            **kwargs: Fields to update
+            
+        Returns:
+            Campaign: Updated campaign instance or None if not found
+        """
+        campaign = session.get(Campaign, campaign_id)
+        if not campaign:
+            return None
+        
+        for key, value in kwargs.items():
+            if hasattr(campaign, key):
+                setattr(campaign, key, value)
+        
+        session.commit()
+        session.refresh(campaign)
+        return campaign
+    
+    @staticmethod
+    def delete(session: Session, campaign_id: int) -> bool:
+        """Delete a campaign.
+        
+        Args:
+            session: Database session
+            campaign_id: Campaign ID
+            
+        Returns:
+            bool: True if deleted, False if not found
+        """
+        campaign = session.get(Campaign, campaign_id)
+        if not campaign:
+            return False
+        
+        session.delete(campaign)
         session.commit()
         return True
