@@ -8,10 +8,10 @@ an easy-to-use interface for testing and interacting with the system.
 
 import streamlit as st
 
-from .ui.home import show_home_page
-from .ui.personas import show_personas_page
-from .ui.prompts import show_prompts_page
-from .ui.tags import show_tags_page
+from do_you_npc.ui.home import show_home_page
+from do_you_npc.ui.personas import show_personas_page
+from do_you_npc.ui.prompts import show_prompts_page
+from do_you_npc.ui.tags import show_tags_page
 
 
 def main():

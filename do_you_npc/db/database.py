@@ -6,7 +6,7 @@ from typing import Generator
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, Session
 
-from .models import Base
+from do_you_npc.db.models import Base
 
 
 class DatabaseConfig:
