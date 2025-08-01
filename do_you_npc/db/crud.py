@@ -4,7 +4,7 @@ from typing import List, Optional
 from sqlalchemy.orm import Session
 from sqlalchemy import select
 
-from .models import Campaign, Persona, Prompt, Tag
+from do_you_npc.db.models import Campaign, Persona, Prompt, Tag
 
 
 class PersonaCRUD:
