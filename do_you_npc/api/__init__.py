@@ -1,0 +1,1 @@
+"""API module for Do You NPC."""
