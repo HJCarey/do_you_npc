@@ -9,6 +9,7 @@ an easy-to-use interface for testing and interacting with the system.
 import streamlit as st
 
 from do_you_npc.ui.home import show_home_page
+from do_you_npc.ui.campaigns import show_campaigns_page
 from do_you_npc.ui.personas import show_personas_page
 from do_you_npc.ui.prompts import show_prompts_page
 from do_you_npc.ui.tags import show_tags_page
@@ -31,13 +32,15 @@ def main():
         # Navigation tabs
         selected_tab = st.radio(
             "Navigation",
-            ["Home", "Personas", "Prompts", "Tags"],
+            ["Home", "Campaigns", "Personas", "Prompts", "Tags"],
             index=0
         )
     
     # Main content area
     if selected_tab == "Home":
         show_home_page()
+    elif selected_tab == "Campaigns":
+        show_campaigns_page()
     elif selected_tab == "Personas":
         show_personas_page()
     elif selected_tab == "Prompts":

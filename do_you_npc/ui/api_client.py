@@ -64,6 +64,34 @@ class APIClient:
             st.error(f"Failed to connect to API: {e}")
             return None
     
+    def update_campaign(self, campaign_id: int, name: str, description: str = None) -> Optional[Dict]:
+        """Update an existing campaign."""
+        data = {"name": name}
+        if description is not None:
+            data["description"] = description
+        
+        try:
+            response = self.session.put(f"{self.base_url}/api/v1/campaigns/{campaign_id}", json=data)
+            return self._handle_response(response)
+        except requests.RequestException as e:
+            st.error(f"Failed to connect to API: {e}")
+            return None
+    
+    def delete_campaign(self, campaign_id: int) -> bool:
+        """Delete a campaign."""
+        try:
+            response = self.session.delete(f"{self.base_url}/api/v1/campaigns/{campaign_id}")
+            if response.status_code == 204:
+                return True
+            else:
+                # Don't automatically show error messages for delete operations
+                # Let the calling code handle the error display
+                return False
+        except requests.RequestException as e:
+            # Still show connection errors as these are critical
+            st.error(f"Failed to connect to API: {e}")
+            return False
+    
     # Persona endpoints
     def get_personas(self, campaign_id: Optional[int] = None) -> Optional[List[Dict]]:
         """Get all personas, optionally filtered by campaign."""
@@ -123,6 +151,39 @@ class APIClient:
         except requests.RequestException as e:
             st.error(f"Failed to connect to API: {e}")
             return None
+    
+    def create_tag(self, tag_data: Dict) -> Optional[Dict]:
+        """Create a new tag."""
+        try:
+            response = self.session.post(f"{self.base_url}/api/v1/tags/", json=tag_data)
+            return self._handle_response(response)
+        except requests.RequestException as e:
+            st.error(f"Failed to connect to API: {e}")
+            return None
+    
+    def update_tag(self, tag_id: int, tag_data: Dict) -> Optional[Dict]:
+        """Update an existing tag."""
+        try:
+            response = self.session.put(f"{self.base_url}/api/v1/tags/{tag_id}", json=tag_data)
+            return self._handle_response(response)
+        except requests.RequestException as e:
+            st.error(f"Failed to connect to API: {e}")
+            return None
+    
+    def delete_tag(self, tag_id: int) -> bool:
+        """Delete a tag."""
+        try:
+            response = self.session.delete(f"{self.base_url}/api/v1/tags/{tag_id}")
+            if response.status_code == 200:
+                return True
+            else:
+                # Don't automatically show error messages for delete operations
+                # Let the calling code handle the error display
+                return False
+        except requests.RequestException as e:
+            # Still show connection errors as these are critical
+            st.error(f"Failed to connect to API: {e}")
+            return False
     
     # Utility methods
     def health_check(self) -> bool:
